@@ -9,6 +9,7 @@ public class BarbeiroDorminhoco {
     public static final Semaphore clientes = new Semaphore(0);
     public static final Semaphore mutex = new Semaphore(1);
     public static int aquardando = 0;
+    public static int clienteCortando;
 
     public static void main(String[] args) {
         

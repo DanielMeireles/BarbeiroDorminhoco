@@ -27,22 +27,13 @@ public class Cliente extends Thread {
                 BarbeiroDorminhoco.mutex.release();
                 // Acessa o semáforo do barbeiro
                 Barbeiro.semaforo.acquire();
-                // Acessa o semáforo do cliente
+                // Acessa o semáforo de cliente
                 BarbeiroDorminhoco.clientes.release();
                 // Altera o estado
                 estado = Estado.CORTANDO;
-                // Executa o método que faz a impressão
-                imprime();
-                // Executa o método que faz uma pausa na execução enquanto está cortando
-                cortando();
-                // Exclusão mútua - Começa a executar
-                BarbeiroDorminhoco.mutex.acquire();
-                // Faz a subtração no contador de clientes aguardando
-                BarbeiroDorminhoco.aquardando--;
-                // Exclusão mútua - Termina a execução
-                BarbeiroDorminhoco.mutex.release();
-                // Libera o semáforo do barbeiro
-                Barbeiro.semaforo.release();
+                BarbeiroDorminhoco.clienteCortando = id+1;
+                // Acessa o semáforo do barbeiro
+                Barbeiro.semaforo.acquire();
                 // Altera o estado
                 estado = Estado.TERMINOU;
                 // Executa o método que faz a impressão
