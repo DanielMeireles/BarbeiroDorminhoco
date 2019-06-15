@@ -6,7 +6,8 @@ public enum Estado {
     CORTANDO(" está cortando o cabelo"),
     DESISTIU(" desistiu porque a barbearia está cheia"),
     CHEGOU(" chegou na barbearia"),
-    TERMINOU(" terminou e está indo embora");
+    TERMINOU(" terminou e está indo embora"),
+    AGUARDANDO(" aguradando sua vez");
     
     private String descricao;
  

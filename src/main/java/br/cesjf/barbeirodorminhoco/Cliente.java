@@ -23,6 +23,8 @@ public class Cliente extends Thread {
             if(BarbeiroDorminhoco.aquardando < BarbeiroDorminhoco.quantidadeCadeiras+1) {
                 // Faz a adição no contador de clientes aguardando
                 BarbeiroDorminhoco.aquardando++;
+                // Altera o estado
+                estado = Estado.AGUARDANDO;
                 // Exclusão mútua - Termina a execução
                 BarbeiroDorminhoco.mutex.release();
                 // Acessa o semáforo do barbeiro
@@ -46,8 +48,6 @@ public class Cliente extends Thread {
                 // Executa o método que faz a impressão
                 imprime();
             }
-            // No fim da execução elimina a Thread
-            Thread.currentThread().isInterrupted();
         } catch (InterruptedException ex) {}
     }
     
