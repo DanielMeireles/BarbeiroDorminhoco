@@ -15,52 +15,77 @@ public class Cliente extends Thread {
     @Override
     public void run() {
         try {
-            // Exclusão mútua - Começa a executar
-            BarbeiroDorminhoco.mutex.acquire();
-            // Executa o método que faz a impressão
-            imprime();
-            // Verifica se as cadeiras já estão cheias
-            if(BarbeiroDorminhoco.aquardando < BarbeiroDorminhoco.quantidadeCadeiras+1) {
-                // Faz a adição no contador de clientes aguardando
-                BarbeiroDorminhoco.aquardando++;
-                // Altera o estado
-                estado = Estado.AGUARDANDO;
-                // Exclusão mútua - Termina a execução
-                BarbeiroDorminhoco.mutex.release();
-                // Acessa o semáforo do barbeiro
-                Barbeiro.semaforo.acquire();
-                // Acessa o semáforo de cliente
-                BarbeiroDorminhoco.clientes.release();
-                // Altera o estado
-                estado = Estado.CORTANDO;
-                BarbeiroDorminhoco.clienteCortando = id+1;
-                // Acessa o semáforo do barbeiro
-                Barbeiro.semaforo.acquire();
-                // Altera o estado
-                estado = Estado.TERMINOU;
-                // Executa o método que faz a impressão
-                imprime();
-            } else {
-                // Exclusão mútua - Termina a execução
-                BarbeiroDorminhoco.mutex.release();
-                // Altera o estado
-                estado = Estado.DESISTIU;
-                // Executa o método que faz a impressão
-                imprime();
+            
+            // Variável que controla quando a Thread deve ser finalizada
+            boolean ativo = true;
+            
+            // Loop que permanece em execução enquanto a variável ativo é verdadeira
+            while(ativo) {
+                
+                switch(estado) {
+                    case CHEGOU:
+                        // Executa o método que faz a impressão
+                        imprime();
+                        // Verifica se as cadeiras estão cheias, se não estiverem o cliente aguarda, caso contrário desiste
+                        if(BarbeiroDorminhoco.aguardando < BarbeiroDorminhoco.quantidadeCadeiras) {
+                            // Altera o estado para aguardando
+                            estado = Estado.AGUARDANDO;
+                        } else {
+                            // Altera o estado para desistiu
+                            estado = Estado.DESISTIU;
+                        }
+                        break;
+                    
+                    case AGUARDANDO:
+                        // Executa o método que faz a impressão
+                        imprime();
+                        // Acrescenta o cliente ao contador de clientes aguardando
+                        BarbeiroDorminhoco.aguardando++;
+                        // Tenta fazer o acesso a exclusão mutua do barbeiro
+                        Barbeiro.barbeiro.acquire();
+                        // Ao ser liberado altera o estado para cortando
+                        estado = Estado.CORTANDO;
+                        break;
+                    
+                    case CORTANDO:
+                        // Executa o método que faz a impressão
+                        imprime();
+                        // Subtrai o cliente do contador de clientes aguardando
+                        BarbeiroDorminhoco.aguardando--;
+                        // Libera o cliente´para o barbeiro fazer o corte
+                        BarbeiroDorminhoco.proximoCliente.release();
+                        // Tenta acessar o mutex que controla quando o barbeiro terminou o corte
+                        Barbeiro.cortando.acquire();
+                        // Ao finalizar altera o estado para terminou
+                        estado = Estado.TERMINOU;
+                        break;
+                    
+                    case TERMINOU:
+                        // Executa o método que faz a impressão
+                        imprime();
+                        // Libera o semáforo do barbeiro para que faça o próximo corte
+                        Barbeiro.barbeiro.release();
+                        // Altera a varável ativo para que a Thread seja finalizada
+                        ativo = false;
+                        break;
+                        
+                    case DESISTIU:
+                        // Executa o método que faz a impressão
+                        imprime();
+                        // Altera a varável ativo para que a Thread seja finalizada
+                        ativo = false;
+                        break;
+                    
+                }
+                
             }
+            
         } catch (InterruptedException ex) {}
-    }
-    
-    // Definição do tempo que o cliente fica cortando o cabelo
-    private void cortando() {
-        try {
-            Thread.sleep((long) Math.round(Math.random() * 10000));
-        } catch (InterruptedException e) {}
     }
     
     // Método que faz a impressão
     private void imprime() {
-        System.out.println("O cliente " + (id + 1) + estado.getDescricao());
+        System.out.println("O cliente " + this.id + estado.getDescricao());
     }
     
 }

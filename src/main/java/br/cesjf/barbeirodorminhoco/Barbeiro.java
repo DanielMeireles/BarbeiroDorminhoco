@@ -7,8 +7,10 @@ public class Barbeiro extends Thread {
     // Declaração de variáveis e objetos
     public final int id;
     public static Estado estado;
-    public static final Semaphore semaforo = new Semaphore(1);
-    public static final Semaphore mutex = new Semaphore(1);
+    // Semáforo do b arbeiro
+    public static final Semaphore barbeiro = new Semaphore(1);
+    // Mutex que controla quando o barbeiro terminou o corte para o cliente permanecer com o estado sincronizado
+    public static final Semaphore cortando = new Semaphore(0);
     
     // Construtor
     public Barbeiro(int id){
@@ -18,38 +20,51 @@ public class Barbeiro extends Thread {
     
     @Override
     public void run() {
+        
         try {
             
             // Mensagem inicial
             System.out.println("Barbearia aberta");
+            
             while(true) {
                 
-                // Verificação se existe cliente aguardando para controlar o estado do barbeiro
-                if(BarbeiroDorminhoco.aquardando == 0){
-                    // Altera o estado
-                    estado = Estado.DORMINDO;
-                    // Executa o método de impressão
-                    imprime();
+                switch(estado){
+                    
+                    case DORMINDO:
+                        // Executa o método de impressão
+                        imprime();
+                        // Acessa o mutex de próximo cliente
+                        BarbeiroDorminhoco.proximoCliente.acquire();
+                        // Altera o estado para cortando
+                        estado = Estado.CORTANDO;
+                        break;
+                        
+                    case CORTANDO:
+                        // Executa o método que faz uma pausa na execução enquanto está efetuando o corte
+                        cortando();
+                        // Altera o estado para terminou
+                        estado = Estado.TERMINOU;
+                        break;
+                    
+                    case TERMINOU:
+                        // Impressão
+                        System.out.println("O barbeiro está livre para o próximo cliente");
+                        // Verifica se existe algum cliente aguardando para definir o próximo estado
+                        if(BarbeiroDorminhoco.aguardando == 0) {
+                            // Altera o estado
+                            estado = Estado.DORMINDO;
+                        } else {
+                            // Altera o estado
+                            estado = Estado.CORTANDO;
+                        }
+                        // Libera o mutex que controla quando o barbeiro terminou o corte para que o cliente esta sincronizado
+                        Barbeiro.cortando.release();
+                        break;
+                        
                 }
-                // Acessa o semáforo de clientes
-                BarbeiroDorminhoco.clientes.acquire();
-                // Exclusão mútua - Começa a executar
-                BarbeiroDorminhoco.mutex.acquire();
-                // Faz a subtração no contador de clientes aguardando
-                BarbeiroDorminhoco.aquardando--;
-                // Altera o estado
-                estado = Estado.CORTANDO;
-                // Exclusão mútua - Termina a execução
-                BarbeiroDorminhoco.mutex.release();
-                // Executa o método que faz a impressão
-                imprime();
-                // Executa o método que faz uma pausa na execução enquanto está cortando
-                cortando();
-                // Libera o semáforo do barbeiro
-                Barbeiro.semaforo.release();
-                // Libera o semáforo do barbeiro
-                Barbeiro.semaforo.release();
+                
             }
+            
         } catch (InterruptedException ex) {}
         
     }
@@ -63,11 +78,7 @@ public class Barbeiro extends Thread {
     
     // Método que faz a impressão
     public void imprime() {
-        if(estado == Estado.CORTANDO) {
-            System.out.println("O barbeiro" + estado.getDescricao() + " do cliente " + BarbeiroDorminhoco.clienteCortando);
-        } else {
-            System.out.print("O barbeiro" + estado.getDescricao());
-        }
+        System.out.println("O barbeiro" + estado.getDescricao());
     }
     
 }

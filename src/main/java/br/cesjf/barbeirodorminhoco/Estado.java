@@ -2,12 +2,12 @@ package br.cesjf.barbeirodorminhoco;
 
 public enum Estado {
     
-    DORMINDO(" dormindo"),
+    DORMINDO(" está dormindo"),
     CORTANDO(" está cortando o cabelo"),
     DESISTIU(" desistiu porque a barbearia está cheia"),
     CHEGOU(" chegou na barbearia"),
     TERMINOU(" terminou e está indo embora"),
-    AGUARDANDO(" aguradando sua vez");
+    AGUARDANDO(" aguardando sua vez");
     
     private String descricao;
  
