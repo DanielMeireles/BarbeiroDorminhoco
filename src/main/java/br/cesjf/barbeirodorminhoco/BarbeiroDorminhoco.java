@@ -25,6 +25,9 @@ public class BarbeiroDorminhoco {
         // Loop para criação dos clientes
         while(true) {
             
+            // Executa o método que da uma pausa entre a criação de clientes
+            pausa();
+            
             // Adiciona valor ao contador de id de cliente
             i++;
             
@@ -33,8 +36,6 @@ public class BarbeiroDorminhoco {
             // Inicialização da Thread do cliente
             cliente.start();
             
-            // Executa o método que da uma pausa entre a criação de clientes
-            pausa();
         }
         
     }
@@ -42,7 +43,7 @@ public class BarbeiroDorminhoco {
     // Definição do tempo de pausa entre a criação de clientes
     private static void pausa() {
         try {
-            Thread.sleep((long) Math.round(Math.random() * 5000));
+            Thread.sleep((long) Math.round(Math.random() * 10000));
         } catch (InterruptedException e) {}
     }
     
